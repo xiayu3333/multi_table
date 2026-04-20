@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Multiplication Practice</title>
+
+<style>
+/* ----------- 自动字体缩放 ----------- */
+html {
+    font-size: calc(15px + 0.4vw);
+}
+
+/* ----------- 页面整体 ----------- */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: #f7f9ff;
+    text-align: center;
+    padding-bottom: 180px; /* 留空间给底部键盘 */
+}
+
+/* ----------- 大标题 ----------- */
+h2 {
+    color: #2d4f8b;
+    font-size: 2rem;
+    margin-top: 1rem;
+}
+
+/* ----------- 题目显示 ----------- */
+#question {
+    font-size: 2.4rem;
+    font-weight: bold;
+    margin-top: 1rem;
+    color: #1f3d73;
+}
+
+/* ----------- 选择区 ----------- */
+#tableSetting select {
+    font-size: 1.3rem;
+    padding: 0.6rem;
+    margin: 1rem 0;
+    border-radius: 0.6rem;
+}
+
+/* ----------- 输入框 ----------- */
+#answer {
+    font-size: 2rem;
+    padding: 0.6rem;
+    width: 70%;
+    margin-top: 0.7rem;
+    border-radius: 0.6rem;
+    border: 2px solid #b8c7e0;
+    text-align: center;
+}
+
+/* ----------- 底部固定键盘（紧凑版） ----------- */
+.keypad-wrapper {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: white;
+    padding: 0.3rem 0 0.6rem;
+    box-shadow: 0 -3px 10px rgba(0,0,0,0.12);
+    z-index: 1000;
+}
+
+/* 键盘网格布局 */
+.keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.35rem;
+    padding: 0 0.8rem;
+}
+
+/* 数字键更小 */
+.keypad button {
+    font-size: 1.5rem;
+    padding: 0.55rem;
+    border-radius: 0.5rem;
+    background: #e6edff;
+    border: none;
+}
+
+/* Clear 一行 */
+.wide-btn {
+    grid-column: span 3;
+    font-size: 1.1rem;
+    padding: 0.45rem;
+}
+
+/* 提交按钮缩小 */
+.submit-btn {
+    margin-top: 0.3rem;
+    width: 90%;
+    font-size: 1.5rem;
+    padding: 0.55rem;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 0.6rem;
+}
+
+/* ----------- Start 按钮 ----------- */
+#startBtn {
+    font-size: 1.8rem;
+    padding: 0.9rem 1.6rem;
+    background: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 0.6rem;
+    width: 70%;
+    margin-top: 1.6rem;
+}
+
+/* ----------- 结果显示 ----------- */
+#result {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-top: 1rem;
+}
+
+/* ----------- 小屏优化 ----------- */
+@media (max-width: 420px) {
+    #question { font-size: 2rem; }
+    .keypad button { font-size: 1.3rem; padding: 0.45rem; }
+    .submit-btn { font-size: 1.3rem; padding: 0.45rem; }
+}
+</style>
+</head>
+
+<body>
+<h2>Multiplication Practice</h2>
+
+<div id="tableSetting">
+    <label>Select Table:</label>
+    <select id="tableRange" onchange="newQuestion()">
+        <option value="all">All (2–9)</option>
+        <option value="2">Table of 2</option>
+        <option value="3">Table of 3</option>
+        <option value="4">Table of 4</option>
+        <option value="5">Table of 5</option>
+        <option value="6">Table of 6</option>
+        <option value="7">Table of 7</option>
+        <option value="8">Table of 8</option>
+        <option value="9">Table of 9</option>
+    </select>
+</div>
+
+<button id="startBtn" onclick="startGame()">Start</button>
+
+<h3 id="question">Press Start to begin!</h3>
+<input id="answer" type="number" placeholder="Your answer" disabled>
+<div id="result"></div>
+
+<!-- ----------- 底部键盘区域 ----------- -->
+<div class="keypad-wrapper">
+    <div class="keypad">
+        <button onclick="pressKey(1)" disabled>1</button>
+        <button onclick="pressKey(2)" disabled>2</button>
+        <button onclick="pressKey(3)" disabled>3</button>
+        <button onclick="pressKey(4)" disabled>4</button>
+        <button onclick="pressKey(5)" disabled>5</button>
+        <button onclick="pressKey(6)" disabled>6</button>
+        <button onclick="pressKey(7)" disabled>7</button>
+        <button onclick="pressKey(8)" disabled>8</button>
+        <button onclick="pressKey(9)" disabled>9</button>
+        <button onclick="pressKey(0)" disabled>0</button>
+        <button class="wide-btn" onclick="clearAnswer()" disabled>Clear</button>
+    </div>
+
+    <button class="submit-btn" id="submit" onclick="checkAnswer()" disabled>Submit</button>
+</div>
+
+<script>
+let a, b;
+
+function startGame() {
+    document.getElementById("startBtn").style.display = "none";
+    document.getElementById("answer").disabled = false;
+    document.querySelectorAll(".keypad button").forEach(btn => btn.disabled = false);
+    document.getElementById("submit").disabled = false;
+    newQuestion();
+}
+
+function newQuestion(keepSame = false) {
+    if (!keepSame) {
+        const range = document.getElementById("tableRange").value;
+        a = (range === "all") ? Math.floor(Math.random() * 8) + 2 : parseInt(range);
+        b = Math.floor(Math.random() * 8) + 2;
+    }
+    document.getElementById("question").innerText = `${a} × ${b} = ?`;
+    document.getElementById("result").innerText = "";
+    document.getElementById("answer").value = "";
+}
+
+function pressKey(num) {
+    document.getElementById("answer").value += num;
+}
+
+function clearAnswer() {
+    document.getElementById("answer").value = "";
+}
+
+function checkAnswer() {
+    const userAns = parseInt(document.getElementById("answer").value);
+    const correct = a * b;
+
+    if (userAns === correct) {
+        document.getElementById("result").innerText = "✔ Correct!";
+        document.getElementById("result").style.color = "green";
+        setTimeout(() => newQuestion(false), 1200);
+    } else {
+        document.getElementById("result").innerText =
+            `✘ Wrong! ${a} × ${b} = ${correct}`;
+        document.getElementById("result").style.color = "red";
+        setTimeout(() => newQuestion(true), 1200);
+    }
+}
+</script>
+</body>
+</html>
